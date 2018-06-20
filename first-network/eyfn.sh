@@ -93,6 +93,7 @@ function networkUp () {
   # generate artifacts if they don't exist
   if [ ! -d "org3-artifacts/crypto-config" ]; then
     generateCerts
+    replacePrivateKey
     generateChannelArtifacts
     createConfigTx
   fi
