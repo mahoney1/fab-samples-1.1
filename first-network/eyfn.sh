@@ -221,6 +221,29 @@ function generateChannelArtifacts() {
   echo
 }
 
+function replacePrivateKey() {
+
+# sed on MacOSX does not support -i flag with a null extension. We will use
+  # 't' for our back-up's extension and delete it at the end of the function
+  ARCH=`uname -s | grep Darwin`
+  if [ "$ARCH" == "Darwin" ]; then
+    OPTS="-it"
+  else
+    OPTS="-i"
+  fi
+
+# Copy the template to the file that will be modified to add the private key
+ 
+  cp docker-compose-ca3-template.yaml docker-compose-ca3.yaml
+  
+  CURRENT_DIR=$PWD
+  
+  cd org3-artifacts/crypto-config/peerOrganizations/org3.example.com/ca/
+  PRIV_KEY=$(ls *_sk)
+  cd "$CURRENT_DIR"
+  sed $OPTS "s/CA3_PRIVATE_KEY/${PRIV_KEY}/g" docker-compose-ca3.yaml 
+
+}
 
 # If BYFN wasn't run abort
 if [ ! -d crypto-config ]; then
@@ -312,6 +335,7 @@ elif [ "${MODE}" == "down" ]; then ## Clear the network
   networkDown
 elif [ "${MODE}" == "generate" ]; then ## Generate Artifacts
   generateCerts
+  replacePrivateKey
   generateChannelArtifacts
   createConfigTx
 elif [ "${MODE}" == "restart" ]; then ## Restart the network
