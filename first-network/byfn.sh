@@ -61,7 +61,6 @@ function printHelp () {
   echo "	byfn.sh down -c mychannel"
   echo "  byfn.sh upgrade -c mychannel"
   echo "	byfn.sh -m up -a"
-  echo "  byfn.sh -m up -a -e"
   echo
   echo "Taking all defaults:"
   echo "	byfn.sh generate"
@@ -157,15 +156,11 @@ function networkUp () {
     generateChannelArtifacts
   fi
   
-  COMPOSE_FILE_ADDITIONS=""   # added for BYFN plus/minus 2 x CAs, CA3 for extend
+  COMPOSE_FILE_ADDITIONS=""   # added for BYFN adding 2 x CAs
   
 
   if [ "${IF_CAS}" == "1" ]; then
     COMPOSE_FILE_ADDITIONS="${COMPOSE_FILE_ADDITIONS} -f $COMPOSE_FILE_CAS"
-  fi
-
-  if [ "${IF_CA3}" == "1" ]; then
-    COMPOSE_FILE_ADDITIONS="${COMPOSE_FILE_ADDITIONS} -f $COMPOSE_FILE_CA3"
   fi
 
   if [ "${IF_COUCHDB}" == "couchdb" ]; then
@@ -254,10 +249,7 @@ function networkDown () {
     docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CAS down --volumes
   fi
 
-  if [ -f ${COMPOSE_FILE_CA3} ]; then
-    docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CA3 down --volumes
-  fi
-  
+ 
   # Don't remove the generated artifacts -- note, the ledgers are always removed
   if [ "$MODE" != "restart" ]; then
     # Bring down the network, deleting the volumes
@@ -303,10 +295,7 @@ function replacePrivateKey () {
   PRIV_KEY=$(ls *_sk)
   cd "$CURRENT_DIR"
   sed $OPTS "s/CA2_PRIVATE_KEY/${PRIV_KEY}/g" docker-compose-e2e.yaml  docker-compose-cas.yaml 
-  cd org3-artifacts/crypto-config/peerOrganizations/org3.example.com/ca/
-  PRIV_KEY=$(ls *_sk)
-  cd "$CURRENT_DIR"
-  sed $OPTS "s/CA3_PRIVATE_KEY/${PRIV_KEY}/g" docker-compose-ca3.yaml 
+  
   # If MacOSX, remove the temporary backup of the docker-compose file
   if [ "$ARCH" == "Darwin" ]; then
     rm docker-compose-e2e.yamlt docker-compose-cas.yamlt
@@ -500,7 +489,7 @@ else
   exit 1
 fi
 
-while getopts "h?m:c:t:d:f:s:l:i:a:e?" opt; do
+while getopts "h?m:c:t:d:f:s:l:i:a?" opt; do
   case "$opt" in
     h|\?)
       printHelp
@@ -522,8 +511,6 @@ while getopts "h?m:c:t:d:f:s:l:i:a:e?" opt; do
     ;;
     a)  IF_CAS=1
     ;;
-    e)  IF_CA3=1
-    ;;
   esac
 done
 
@@ -533,10 +520,6 @@ ADDITIONS=""
 
   if [ "${IF_CAS}" == "1" ]; then
     ADDITIONS="${ADDITIONS} and using Fabric CAs"
-  fi
-
-  if [ "${IF_CA3}" == "1" ]; then
-    ADDITIONS="${ADDITIONS} and using additional Org3 CA"
   fi
 
   if [ "${IF_COUCHDB}" == "couchdb" ]; then
