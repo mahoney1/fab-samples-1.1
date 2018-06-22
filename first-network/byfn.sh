@@ -445,6 +445,33 @@ function generateChannelArtifacts() {
   echo
 }
 
+function networkStop () {
+
+   if [ "${IF_COUCHDB}" == "couchdb" ]; then
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 -f $COMPOSE_FILE_COUCH stop 
+   else
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 stop
+   fi
+
+   if [ -f ${COMPOSE_FILE_CAS} ]; then
+       docker-compose -f $COMPOSE_FILE_CAS stop
+   fi
+}
+
+function networkStart () {
+
+   if [ "${IF_COUCHDB}" == "couchdb" ]; then
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 -f $COMPOSE_FILE_COUCH start 
+   else
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 start
+   fi
+
+   if [ -f ${COMPOSE_FILE_CAS} ]; then
+       docker-compose -f $COMPOSE_FILE_CAS start
+   fi
+
+}
+
 # Obtain the OS and Architecture string that will be used to select the correct
 # native binaries for your platform
 OS_ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
@@ -484,6 +511,10 @@ elif [ "$MODE" == "generate" ]; then
   EXPMODE="Generating certs and genesis block for"
 elif [ "$MODE" == "upgrade" ]; then
   EXPMODE="Upgrading the network"
+elif [ "${MODE}" == "stop" ] ; then # ie docker-compose stop 
+  EXPMODE="Stopping but preserving container state"
+elif  [ "${MODE}" == "start" ] ; then # ie docker-compose start
+   EXPMODE="Starting from previous stopped container state"
 else
   printHelp
   exit 1
@@ -547,6 +578,10 @@ elif [ "${MODE}" == "restart" ]; then ## Restart the network
   networkUp
 elif [ "${MODE}" == "upgrade" ]; then ## Upgrade the network from v1.0.x to v1.1
   upgradeNetwork
+elif [ "${MODE}" == "stop" ] ; then # do docker-compose stop 
+  networkStop
+elif  [ "${MODE}" == "start" ] ; then # do docker-compose start
+  networkStart 
 else
   printHelp
   exit 1
