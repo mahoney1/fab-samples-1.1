@@ -448,9 +448,9 @@ function generateChannelArtifacts() {
 function networkStop () {
 
    if [ "${IF_COUCHDB}" == "couchdb" ]; then
-       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 -f $COMPOSE_FILE_COUCH stop 
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CA3 -f $COMPOSE_FILE_COUCH stop 
    else
-       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 stop
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CA3 stop
    fi
 
    if [ -f ${COMPOSE_FILE_CAS} ]; then
@@ -461,9 +461,9 @@ function networkStop () {
 function networkStart () {
 
    if [ "${IF_COUCHDB}" == "couchdb" ]; then
-       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 -f $COMPOSE_FILE_COUCH start 
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CA3 -f $COMPOSE_FILE_COUCH start 
    else
-       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG3 start
+       docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_CA3 start
    fi
 
    if [ -f ${COMPOSE_FILE_CAS} ]; then
